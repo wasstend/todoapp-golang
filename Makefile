@@ -13,7 +13,7 @@ env-down:
 env-cleanup:
 	@read -p "WARN: Do you want to delete all volume files? [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-		docker compose down postgres && \
+		docker compose down postgres port-forwarder && \
 		rm -rf out/pgdata && \
 		echo "Volume files cleared"; \
 	else \
@@ -56,3 +56,20 @@ migrate-up:
 
 migrate-down:
 	@make migrate-action action=down
+
+#Logs
+logs-cleanup:
+	@read -p "WARN: Do you want to delete all log files files? [y/N]: " ans; \
+	if [ "$$ans" = "y" ]; then \
+		rm -rf out/logs && \
+		echo "Log files cleared"; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+#To Do App
+todoapp-run:
+	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	export POSTGRES_HOST=localhost && \
+	go mod tidy && \
+	go run cmd/todoapp/main.go
