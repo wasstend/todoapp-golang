@@ -36,6 +36,13 @@ func (h *UsersHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/users",
 			Handler: h.CreateUser,
+			/*
+				Example of usage Middleware on separate Route
+
+				Middleware: []core_http_middleware.Middleware{
+					core_http_middleware.SomeMiddleware()...
+				}
+			*/
 		},
 		{
 			Method:  http.MethodGet,

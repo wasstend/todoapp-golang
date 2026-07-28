@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/wasstend/todoapp-golang/internal/core/domain"
 	core_errors "github.com/wasstend/todoapp-golang/internal/core/errors"
+	core_postgres_pool "github.com/wasstend/todoapp-golang/internal/core/repository/postgres/pool"
 )
 
 func (r *UserRepository) GetUser(ctx context.Context, id int) (domain.User, error) {
@@ -16,7 +16,7 @@ func (r *UserRepository) GetUser(ctx context.Context, id int) (domain.User, erro
 
 	query := `
 	SELECT * FROM todoapp.users
-	WHERE id=$1
+	WHERE id=$1;
 	`
 
 	row := r.pool.QueryRow(ctx, query, id)
@@ -30,7 +30,7 @@ func (r *UserRepository) GetUser(ctx context.Context, id int) (domain.User, erro
 		&userModel.PhoneNumber,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.User{}, fmt.Errorf(
 				"user with id='%d': %w",
 				id,

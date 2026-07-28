@@ -8,13 +8,13 @@ import (
 	"syscall"
 
 	core_logger "github.com/wasstend/todoapp-golang/internal/core/logger"
-	core_postgres_pool "github.com/wasstend/todoapp-golang/internal/core/repository/postgres/pool"
+	core_logger_zap "github.com/wasstend/todoapp-golang/internal/core/logger/zap"
+	core_pgx_pool "github.com/wasstend/todoapp-golang/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/wasstend/todoapp-golang/internal/core/transport/http/middleware"
 	core_http_server "github.com/wasstend/todoapp-golang/internal/core/transport/http/server"
 	users_postgres_repository "github.com/wasstend/todoapp-golang/internal/features/users/repository/postgres"
 	users_service "github.com/wasstend/todoapp-golang/internal/features/users/service"
 	users_transport_http "github.com/wasstend/todoapp-golang/internal/features/users/transport/http"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	)
 	defer cancel()
 
-	logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
+	logger, err := core_logger_zap.NewLogger(core_logger_zap.NewConfigMust())
 	if err != nil {
 		fmt.Println("failed to init logger:", err)
 		os.Exit(1)
@@ -32,17 +32,17 @@ func main() {
 	defer logger.Close()
 
 	logger.Debug("initializing postgres connection pool")
-	pool, err := core_postgres_pool.NewConnectionPool(
+	pool, err := core_pgx_pool.NewPool(
 		ctx,
-		core_postgres_pool.NewConfigMust(),
+		core_pgx_pool.NewConfigMust(),
 	)
 	if err != nil {
-		logger.Fatal("connection pool failed", zap.Error(err))
+		logger.Fatal("connection pool failed", core_logger.Error(err))
 	}
 
 	defer pool.Close()
 
-	logger.Debug("initializing feature", zap.String("feature", "users"))
+	logger.Debug("initializing feature", core_logger.String("feature", "users"))
 
 	usersRepository := users_postgres_repository.NewUserRepository(pool)
 	userService := users_service.NewUsersService(usersRepository)
@@ -54,8 +54,8 @@ func main() {
 		logger,
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
-		core_http_middleware.Panic(),
 		core_http_middleware.Trace(),
+		core_http_middleware.Panic(),
 	)
 
 	apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.APIVersion1)
@@ -64,6 +64,6 @@ func main() {
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 
 	if err := httpServer.Run(ctx); err != nil {
-		logger.Error("HTTP Server run error", zap.Error(err))
+		logger.Error("HTTP Server run error", core_logger.Error(err))
 	}
 }

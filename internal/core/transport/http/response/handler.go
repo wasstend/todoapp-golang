@@ -8,16 +8,15 @@ import (
 
 	core_errors "github.com/wasstend/todoapp-golang/internal/core/errors"
 	core_logger "github.com/wasstend/todoapp-golang/internal/core/logger"
-	"go.uber.org/zap"
 )
 
 type HTTPResponseHandler struct {
-	log *core_logger.Logger
+	log core_logger.Logger
 	w   http.ResponseWriter
 }
 
 func NewHTTPResponseHandler(
-	logger *core_logger.Logger,
+	logger core_logger.Logger,
 	w http.ResponseWriter,
 ) *HTTPResponseHandler {
 	return &HTTPResponseHandler{
@@ -34,7 +33,7 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	statusCode := http.StatusInternalServerError
 	err := fmt.Errorf("unexpected panic: %v", p)
 
-	h.log.Error(msg, zap.Error(err))
+	h.log.Error(msg, core_logger.Error(err))
 
 	h.errorResponse(statusCode, err, msg)
 }
@@ -43,14 +42,14 @@ func (h *HTTPResponseHandler) JsonResponse(responseBody any, statusCode int) {
 	h.w.WriteHeader(statusCode)
 
 	if err := json.NewEncoder(h.w).Encode(responseBody); err != nil {
-		h.log.Error("write http response", zap.Error(err))
+		h.log.Error("write http response", core_logger.Error(err))
 	}
 }
 
 func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 	var (
 		statusCode int
-		logFunc    func(string, ...zap.Field)
+		logFunc    func(string, ...core_logger.Field)
 	)
 
 	switch {
@@ -70,7 +69,7 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 		logFunc = h.log.Error
 	}
 
-	logFunc(msg, zap.Error(err))
+	logFunc(msg, core_logger.Error(err))
 
 	h.errorResponse(statusCode, err, msg)
 }
