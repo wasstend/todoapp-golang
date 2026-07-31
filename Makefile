@@ -73,3 +73,6 @@ todoapp-run:
 	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/todoapp/main.go
+
+postgres:
+	@make env-up && make env-port-forward

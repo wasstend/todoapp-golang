@@ -1,4 +1,4 @@
-package users_transport_http
+package tasks_transport_http
 
 import (
 	"net/http"
@@ -7,24 +7,24 @@ import (
 	core_http_utils "github.com/wasstend/todoapp-golang/internal/core/transport/http/utils"
 )
 
-func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (h *TasksHTTPHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	ctx, logger, responseHandler := core_http_utils.GetCtxLogResp(w, r)
 
-	logger.Debug("invoke DeleteUser Handler")
+	logger.Debug("invoke DeleteTask handler")
 
-	userId, err := core_http_request.GetIntPathValue(r, "id")
+	id, err := core_http_request.GetIntPathValue(r, "id")
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
-			"failed to get user id path value",
+			"failed to get task id",
 		)
 		return
 	}
 
-	if err := h.usersService.DeleteUser(ctx, userId); err != nil {
+	if err := h.tasksService.DeleteTask(ctx, id); err != nil {
 		responseHandler.ErrorResponse(
 			err,
-			"failed to delete user",
+			"failed to delete task",
 		)
 		return
 	}

@@ -19,6 +19,9 @@ func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 }
 
 func (rw *ResponseWriter) WriteHeader(statusCode int) {
+	if rw.statusCode != nil {
+		return
+	}
 	rw.ResponseWriter.WriteHeader(statusCode)
 	rw.statusCode = &statusCode
 }

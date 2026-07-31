@@ -6,10 +6,9 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/wasstend/todoapp-golang/internal/core/domain"
-	core_logger "github.com/wasstend/todoapp-golang/internal/core/logger"
 	core_http_request "github.com/wasstend/todoapp-golang/internal/core/transport/http/request"
-	core_http_response "github.com/wasstend/todoapp-golang/internal/core/transport/http/response"
 	core_http_types "github.com/wasstend/todoapp-golang/internal/core/transport/http/types"
+	core_http_utils "github.com/wasstend/todoapp-golang/internal/core/transport/http/utils"
 )
 
 type PatchUserRequest struct {
@@ -43,9 +42,7 @@ func (r *PatchUserRequest) Validate(requestValidator *validator.Validate) error 
 type PatchUserResponse UserDTOResponse
 
 func (h *UsersHTTPHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := core_logger.FromContext(ctx)
-	responseHandler := core_http_response.NewHTTPResponseHandler(logger, w)
+	ctx, logger, responseHandler := core_http_utils.GetCtxLogResp(w, r)
 
 	logger.Debug("invoke PatchUser Handler")
 

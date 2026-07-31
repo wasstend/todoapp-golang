@@ -1,4 +1,4 @@
-package users_transport_http
+package tasks_transport_http
 
 import (
 	"net/http"
@@ -7,35 +7,32 @@ import (
 	core_http_utils "github.com/wasstend/todoapp-golang/internal/core/transport/http/utils"
 )
 
-type GetUserResponse UserDTOResponse
+type GetTaskResponse TaskDTOResponse
 
-func (h *UsersHTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+func (h *TasksHTTPHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 	ctx, logger, responseHandler := core_http_utils.GetCtxLogResp(w, r)
 
-	logger.Debug("invoke GetUser Handler")
+	logger.Debug("invoke GetTask handler")
 
-	var (
-		id = "id"
-	)
-
-	userId, err := core_http_request.GetIntPathValue(r, id)
+	id, err := core_http_request.GetIntPathValue(r, "id")
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
-			"failed to get user id path value",
+			"failed to get user id",
 		)
 		return
 	}
 
-	user, err := h.usersService.GetUser(ctx, userId)
+	task, err := h.tasksService.GetTask(ctx, id)
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
-			"failed to get user",
+			"failed to get task",
 		)
 		return
 	}
 
-	response := GetUserResponse(userDTOFromDomain(user))
+	response := GetTaskResponse(taskDTOFromDomain(task))
+
 	responseHandler.JsonResponse(response, http.StatusOK)
 }

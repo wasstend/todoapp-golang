@@ -12,6 +12,9 @@ import (
 	core_pgx_pool "github.com/wasstend/todoapp-golang/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/wasstend/todoapp-golang/internal/core/transport/http/middleware"
 	core_http_server "github.com/wasstend/todoapp-golang/internal/core/transport/http/server"
+	tasks_postgres_repository "github.com/wasstend/todoapp-golang/internal/features/tasks/repository/postgres"
+	tasks_service "github.com/wasstend/todoapp-golang/internal/features/tasks/service"
+	tasks_transport_http "github.com/wasstend/todoapp-golang/internal/features/tasks/transport/http"
 	users_postgres_repository "github.com/wasstend/todoapp-golang/internal/features/users/repository/postgres"
 	users_service "github.com/wasstend/todoapp-golang/internal/features/users/service"
 	users_transport_http "github.com/wasstend/todoapp-golang/internal/features/users/transport/http"
@@ -45,8 +48,14 @@ func main() {
 	logger.Debug("initializing feature", core_logger.String("feature", "users"))
 
 	usersRepository := users_postgres_repository.NewUserRepository(pool)
-	userService := users_service.NewUsersService(usersRepository)
-	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(userService)
+	usersService := users_service.NewUsersService(usersRepository)
+	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(usersService)
+
+	logger.Debug("initializing feature", core_logger.String("feature", "tasks"))
+
+	tasksRepository := tasks_postgres_repository.NewTasksRepository(pool)
+	tasksService := tasks_service.NewTasksService(tasksRepository)
+	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
 	logger.Debug("initializing http server")
 	httpServer := core_http_server.NewHTTPServer(
@@ -60,6 +69,7 @@ func main() {
 
 	apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.APIVersion1)
 	apiVersionRouter.RegisterRoutes(usersTransportHTTP.Routes()...)
+	apiVersionRouter.RegisterRoutes(tasksTransportHTTP.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 

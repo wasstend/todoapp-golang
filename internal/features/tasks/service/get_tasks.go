@@ -1,4 +1,4 @@
-package users_service
+package tasks_service
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	core_errors "github.com/wasstend/todoapp-golang/internal/core/errors"
 )
 
-func (s *UsersService) GetUsers(ctx context.Context, limit, offset *int) ([]domain.User, error) {
+func (s *TasksService) GetTasks(ctx context.Context, limit, offset, userID *int) ([]domain.Task, error) {
 
 	params := []struct {
 		name  string
@@ -28,13 +28,13 @@ func (s *UsersService) GetUsers(ctx context.Context, limit, offset *int) ([]doma
 		}
 	}
 
-	users, err := s.usersRepository.GetUsers(ctx, limit, offset)
+	tasks, err := s.tasksRepository.GetTasks(ctx, limit, offset, userID)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"get users from repository: %w",
+			"failed to get tasks from repository: %w",
 			err,
 		)
 	}
 
-	return users, nil
+	return tasks, nil
 }
