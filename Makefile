@@ -67,6 +67,9 @@ logs-cleanup:
 		echo "Cancelled"; \
 	fi
 
+logs:
+	@docker logs todoapp
+
 #To Do App
 todoapp-run:
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
@@ -74,5 +77,14 @@ todoapp-run:
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/todoapp/main.go
 
+todoapp-deploy:
+	@docker compose up -d  --build todoapp
+
 postgres:
 	@make env-up && make env-port-forward
+
+ps:
+	@docker compose ps
+
+down:
+	@docker compose down
