@@ -4,20 +4,24 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	core_errors "github.com/wasstend/todoapp-golang/internal/core/errors"
 )
 
-func GetIntQueryParams(r *http.Request, key string) (*int, error) {
+// getQueryParam reads the query parameter by key and parses it with parse.
+// Returns nil if the parameter is absent, or a wrapped ErrorInvalidArgument
+// if parsing fails.
+func getQueryParam[T any](r *http.Request, key string, parse func(string) (T, error)) (*T, error) {
 	param := r.URL.Query().Get(key)
 	if param == "" {
 		return nil, nil
 	}
 
-	value, err := strconv.Atoi(param)
+	value, err := parse(param)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"param='%s' by key='%s' not a valid integer: %v: %w",
+			"param='%s' by key='%s' is not valid: %v: %w",
 			param,
 			key,
 			err,
@@ -26,4 +30,14 @@ func GetIntQueryParams(r *http.Request, key string) (*int, error) {
 	}
 
 	return &value, nil
+}
+
+func GetIntQueryParam(r *http.Request, key string) (*int, error) {
+	return getQueryParam(r, key, strconv.Atoi)
+}
+
+func GetTimeQueryParam(r *http.Request, key string, layout string) (*time.Time, error) {
+	return getQueryParam(r, key, func(param string) (time.Time, error) {
+		return time.Parse(layout, param)
+	})
 }
