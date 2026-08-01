@@ -5,11 +5,26 @@ import (
 	"net/http"
 
 	core_http_request "github.com/wasstend/todoapp-golang/internal/core/transport/http/request"
+	core_http_response "github.com/wasstend/todoapp-golang/internal/core/transport/http/response"
 	core_http_utils "github.com/wasstend/todoapp-golang/internal/core/transport/http/utils"
 )
 
 type GetUsersResponse []UserDTOResponse
 
+// referenced only in swagger annotations below
+var _ core_http_response.ErrorResponse
+
+// GetUsers 	godoc
+// @Summary 	Получение пользователей
+// @Description Получение данных о всех пользователях в системе с опциональной пагинацией
+// @Tags 		users
+// @Produce 	json
+// @Param 		limit query int false "Размер страницы с пользователями"
+// @Param 		offset query int false "Смещение страницы с пользователями"
+// @Success 	200 {object} GetUsersResponse "Успешное получение пользователей"
+// @Failure 	400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 	500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router 		/users [get]
 func (h *UsersHTTPHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	ctx, logger, responseHandler := core_http_utils.GetCtxLogResp(w, r)
 

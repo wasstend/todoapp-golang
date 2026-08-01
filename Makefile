@@ -70,6 +70,16 @@ logs-cleanup:
 logs:
 	@docker logs todoapp
 
+
+#Swagger
+swagger-gen:
+	@docker compose run --rm swagger \
+		init \
+		-g cmd/todoapp/main.go \
+		-o docs \
+		--parseInternal \
+		--parseDependency
+
 #To Do App
 todoapp-run:
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
