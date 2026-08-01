@@ -18,23 +18,7 @@ func (r *StatisticsRepository) GetTasks(ctx context.Context, queryParams domain.
 	SELECT * FROM todoapp.tasks
 	`)
 
-	args := []any{}
-	conditions := []string{}
-
-	if queryParams.UserID != nil {
-		conditions = append(conditions, fmt.Sprintf("author_user_id=$%d", len(args)+1))
-		args = append(args, queryParams.UserID)
-	}
-
-	if queryParams.From != nil {
-		conditions = append(conditions, fmt.Sprintf("created_at>=$%d", len(args)+1))
-		args = append(args, queryParams.From)
-	}
-
-	if queryParams.To != nil {
-		conditions = append(conditions, fmt.Sprintf("created_at<$%d", len(args)+1))
-		args = append(args, queryParams.To)
-	}
+	args, conditions := queryParamsToArgs(queryParams)
 
 	if len(conditions) > 0 {
 		queryBuilder.WriteString(" WHERE ")
@@ -88,4 +72,26 @@ func (r *StatisticsRepository) GetTasks(ctx context.Context, queryParams domain.
 	taskDomains := taskDomainsFromModels(taskModels)
 
 	return taskDomains, nil
+}
+
+func queryParamsToArgs(queryParams domain.StatisticsFilters) ([]any, []string) {
+	args := []any{}
+	conditions := []string{}
+
+	if queryParams.UserID != nil {
+		conditions = append(conditions, fmt.Sprintf("author_user_id=$%d", len(args)+1))
+		args = append(args, queryParams.UserID)
+	}
+
+	if queryParams.From != nil {
+		conditions = append(conditions, fmt.Sprintf("created_at>=$%d", len(args)+1))
+		args = append(args, queryParams.From)
+	}
+
+	if queryParams.To != nil {
+		conditions = append(conditions, fmt.Sprintf("created_at<$%d", len(args)+1))
+		args = append(args, queryParams.To)
+	}
+
+	return args, conditions
 }

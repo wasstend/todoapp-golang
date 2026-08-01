@@ -1,7 +1,6 @@
-# To do app golang
-# ToDoApp (Golang)
+# To Do App (Golang)
 
-Простой REST API для управления задачами (To-Do), написанный на Go. Приложение построено по принципу "feature-based" архитектуры: каждая доменная область (`users`, `tasks`, `statistics`) содержит свои слои `service` / `repository` / `transport`, а общий код (логгер, HTTP-сервер, работа с Postgres) вынесен в `internal/core`.
+Простой REST API для управления задачами, написанный на Go. Приложение построено по принципу "feature-based" архитектуры: каждая доменная область (`users`, `tasks`, `statistics`) содержит свои слои `service` / `repository` / `transport`, а общий код (логгер, HTTP-сервер, работа с Postgres) вынесен в `internal/core`.
 
 ## Стек технологий
 
@@ -18,7 +17,7 @@
 ```
 cmd/todoapp/          — точка входа (main.go)
 internal/core/         — переиспользуемая инфраструктура
-  ├── domain/          — доменные сущности (User, Task) и их валидация
+  ├── domain/          — доменные сущности (User, Task, Statistics) и их валидация
   ├── errors/          — общие типы ошибок
   ├── logger/          — абстракция логгера + реализация на zap
   ├── repository/      — пул соединений с Postgres (pgx)
@@ -26,17 +25,11 @@ internal/core/         — переиспользуемая инфраструк
 internal/features/
   ├── users/           — CRUD пользователей
   ├── tasks/           — CRUD задач
-  └── statistics/      — статистика (в разработке)
+  └── statistics/      — статистика
 migrations/            — SQL-миграции (golang-migrate)
 docker-compose.yaml    — Postgres + туннель для локального порта + сервис миграций
 Makefile               — команды для запуска окружения, миграций и приложения
 ```
-
-## Требования
-
-- Go >= 1.26
-- Docker и Docker Compose
-- `make`
 
 ## Настройка окружения
 
@@ -56,7 +49,7 @@ Makefile               — команды для запуска окружени
    | `POSTGRES_TIMEOUT`     | таймаут подключения к БД                    | `10s`        |
    | `HTTP_ADDR`            | адрес, на котором слушает HTTP-сервер       | `:5050`      |
    | `HTTP_SHUTDOWN_TIMEOUT`| таймаут graceful shutdown сервера           | `30s`        |
-   | `LOGGER_LEVEL`         | уровень логирования (например, `DEBUG`)     | —            |
+   | `LOGGER_LEVEL`         | уровень логирования    | `DEBUG`      |
 
 ## Запуск
 
@@ -126,11 +119,15 @@ make migrate-action action=<action>   # произвольное действи�
 | PATCH  | `/tasks/{id}`     | Частично обновить задачу |
 | DELETE | `/tasks/{id}`     | Удалить задачу           |
 
-Раздел **Statistics** находится в разработке (ветка `feature/statistics`).
+### Statistics
+
+| Метод  | Путь              | Описание                 |
+|--------|-------------------|--------------------------|
+| GET    | `/statistics`     | Получить статистику (user_id, from, to) |
 
 ## Модель данных
 
-- **User**: `id`, `version`, `full_name` (3–100 символов), `phone_number` (опционально, формат `+XXXXXXXXXXX`)
-- **Task**: `id`, `version`, `title` (1–100 символов), `description` (опционально, до 1000 символов), `completed`, `created_at`, `completed_at`, `author_user_id` (ссылка на пользователя)
+- **users**: `id`, `version`, `full_name` (3–100 символов), `phone_number` (опционально, формат `+XXXXXXXXXXX`)
+- **tasks**: `id`, `version`, `title` (1–100 символов), `description` (опционально, до 1000 символов), `completed`, `created_at`, `completed_at`, `author_user_id` (ссылка на пользователя)
 
 Схема БД описана в `migrations/000001_init.up.sql`.
