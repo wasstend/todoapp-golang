@@ -21,8 +21,15 @@ import (
 	users_postgres_repository "github.com/wasstend/todoapp-golang/internal/features/users/repository/postgres"
 	users_service "github.com/wasstend/todoapp-golang/internal/features/users/service"
 	users_transport_http "github.com/wasstend/todoapp-golang/internal/features/users/transport/http"
+
+	_ "github.com/wasstend/todoapp-golang/docs"
 )
 
+// @title 		Golang Todo API
+// @version 	1.0
+// @description Todo Application RestAPI scheme
+// @host 		127.0.0.1:5050
+// @BasePath 	/api/v1
 func main() {
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -70,6 +77,7 @@ func main() {
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
 		logger,
+		core_http_middleware.CORS(),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),
@@ -82,6 +90,7 @@ func main() {
 	apiVersionRouter.RegisterRoutes(statisticsTransportHTTP.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
+	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("HTTP Server run error", core_logger.Error(err))

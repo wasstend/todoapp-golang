@@ -7,14 +7,15 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/wasstend/todoapp-golang/internal/core/domain"
 	core_http_request "github.com/wasstend/todoapp-golang/internal/core/transport/http/request"
+	core_http_response "github.com/wasstend/todoapp-golang/internal/core/transport/http/response"
 	core_http_types "github.com/wasstend/todoapp-golang/internal/core/transport/http/types"
 	core_http_utils "github.com/wasstend/todoapp-golang/internal/core/transport/http/utils"
 )
 
 type PatchTaskRequest struct {
-	Title       core_http_types.Nullable[string] `json:"title"`
-	Description core_http_types.Nullable[string] `json:"description"`
-	Completed   core_http_types.Nullable[bool]   `json:"completed"`
+	Title       core_http_types.Nullable[string] `json:"title" swaggertype:"string" example:"My Task"`
+	Description core_http_types.Nullable[string] `json:"description" swaggertype:"string" example:"Description of my task"`
+	Completed   core_http_types.Nullable[bool]   `json:"completed" swaggertype:"boolean" example:"true"`
 }
 
 type PatchTaskResponse TaskDTOResponse
@@ -50,6 +51,28 @@ func (r *PatchTaskRequest) Validate(requestValidator *validator.Validate) error 
 	return nil
 }
 
+// referenced only in swagger annotations below
+var _ core_http_response.ErrorResponse
+
+// PatchTask 	godoc
+// @Summary 	Изменение задачи
+// @Description Изменение информации о задаче в системе по её ID
+// @Description ### Логика обновления полей (Three-state logic):
+// @Description - Если поле **не передано** в запросе, то оно не изменяется.
+// @Description - Если поле **передано со значением null**, то оно обнуляется.
+// @Description - Если поле **передано с конкретным значением**, то оно обновляется на это значение.
+// @Description Ограничения: `title` и `completed` не могут быть null.
+// @Tags 		tasks
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "ID задачи"
+// @Param 		request body PatchTaskRequest true "Новые данные задачи"
+// @Success 	200 {object} PatchTaskResponse "Успешное изменение данных задачи"
+// @Failure 	400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 	404 {object} core_http_response.ErrorResponse "Not Found"
+// @Failure 	409 {object} core_http_response.ErrorResponse "Conflict"
+// @Failure 	500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router 		/tasks/{id} [patch]
 func (h *TasksHTTPHandler) PatchTask(w http.ResponseWriter, r *http.Request) {
 	ctx, logger, responseHandler := core_http_utils.GetCtxLogResp(w, r)
 
