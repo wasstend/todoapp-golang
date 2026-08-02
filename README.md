@@ -1,6 +1,6 @@
-# To Do App (Golang)
+# To Do App
 
-Простой REST API для управления задачами, написанный на Go. Приложение построено по принципу "feature-based" архитектуры: каждая доменная область (`users`, `tasks`, `statistics`) содержит свои слои `service` / `repository` / `transport`, а общий код (логгер, HTTP-сервер, работа с Postgres) вынесен в `internal/core`.
+Простой REST API для управления задачами, написанный на Go, с простым веб-интерфейсом. Приложение построено по принципу "feature-based" архитектуры: каждая доменная область (`users`, `tasks`, `statistics`, `web`) содержит свои слои `service` / `repository` / `transport`, а общий код (логгер, HTTP-сервер, работа с Postgres) вынесен в `internal/core`.
 
 ## Стек технологий
 
@@ -10,7 +10,8 @@
 - **zap** — структурированное логирование
 - **go-playground/validator** — валидация входных данных
 - **net/http** (`http.ServeMux`) — HTTP-роутинг, без сторонних фреймворков
-- **Docker Compose** — окружение для Postgres и миграций
+- **swaggo/swag** + **http-swagger** — генерация и раздача Swagger-документации
+- **Docker Compose** — окружение для Postgres, миграций и деплоя приложения
 
 ## Структура проекта
 
@@ -25,10 +26,13 @@ internal/core/         — переиспользуемая инфраструк
 internal/features/
   ├── users/           — CRUD пользователей
   ├── tasks/           — CRUD задач
-  └── statistics/      — статистика
+  ├── statistics/      — статистика
+  └── web/             — раздача статичной веб-страницы (public/index.html)
+docs/                  — сгенерированная Swagger-документация (swag)
+public/                — статика веб-интерфейса
 migrations/            — SQL-миграции (golang-migrate)
-docker-compose.yaml    — Postgres + туннель для локального порта + сервис миграций
-Makefile               — команды для запуска окружения, миграций и приложения
+docker-compose.yaml    — Postgres, туннель для локального порта, миграции, сборка/деплой приложения, генерация Swagger
+Makefile               — команды для запуска окружения, миграций, деплоя и приложения
 ```
 
 ## Настройка окружения
@@ -41,17 +45,24 @@ Makefile               — команды для запуска окружени
 
    Основные переменные:
 
-   | Переменная            | Описание                                   | По умолчанию |
-   |------------------------|---------------------------------------------|--------------|
-   | `POSTGRES_USER`        | пользователь Postgres                       | —            |
-   | `POSTGRES_PASSWORD`    | пароль Postgres                             | —            |
-   | `POSTGRES_DB`          | имя базы данных                             | —            |
-   | `POSTGRES_TIMEOUT`     | таймаут подключения к БД                    | `10s`        |
-   | `HTTP_ADDR`            | адрес, на котором слушает HTTP-сервер       | `:5050`      |
-   | `HTTP_SHUTDOWN_TIMEOUT`| таймаут graceful shutdown сервера           | `30s`        |
-   | `LOGGER_LEVEL`         | уровень логирования    | `DEBUG`      |
+   | Переменная              | Описание                                         | По умолчанию |
+   |-------------------------|---------------------------------------------------|--------------|
+   | `POSTGRES_USER`         | пользователь Postgres                              | —            |
+   | `POSTGRES_PASSWORD`     | пароль Postgres                                    | —            |
+   | `POSTGRES_DB`           | имя базы данных                                    | —            |
+   | `POSTGRES_TIMEOUT`      | таймаут подключения к БД                           | `10s`        |
+   | `HTTP_ADDR`             | адрес, на котором слушает HTTP-сервер              | `:5050`      |
+   | `HTTP_SHUTDOWN_TIMEOUT` | таймаут graceful shutdown сервера                  | `30s`        |
+   | `HTTP_ALLOWED_ORIGINS`  | список разрешённых CORS origin'ов через запятую    | —            |
+   | `LOGGER_LEVEL`          | уровень логирования                                | `DEBUG`      |
 
 ## Запуск
+
+### Простой запуск
+
+Прострой запуск доступен по **URL:**`http://5.101.50.146:5050`
+
+### Поднять локально
 
 Все основные операции вынесены в `Makefile`.
 
@@ -75,7 +86,14 @@ Makefile               — команды для запуска окружени
    make todoapp-run
    ```
 
-   По умолчанию сервер поднимется на `http://localhost:5050`, логи пишутся в `out/logs/`.
+   По умолчанию сервер поднимется на `http://localhost:5050`, логи пишутся в `out/logs/`. Веб-интерфейс доступен на `/`, Swagger-документация — на `/swagger/`.
+
+   Приложение можно также запустить в Docker вместо `make todoapp-run`:
+
+   ```bash
+   make todoapp-deploy    # собрать образ и поднять контейнер todoapp
+   make todoapp-undeploy  # остановить контейнер todoapp
+   ```
 
 ### Остановка и очистка окружения
 
@@ -94,6 +112,16 @@ make migrate-up                       # применить миграции
 make migrate-down                     # откатить миграции
 make migrate-action action=<action>   # произвольное действие migrate (up/down/version/force)
 ```
+
+### Swagger
+
+Документация генерируется из аннотаций в коде (`swaggo/swag`) в директорию `docs/`:
+
+```bash
+make swagger-gen
+```
+
+После запуска приложения документация доступна на `http://localhost:5050/swagger/`.
 
 ## API
 
@@ -125,9 +153,13 @@ make migrate-action action=<action>   # произвольное действи�
 |--------|-------------------|--------------------------|
 | GET    | `/statistics`     | Получить статистику (user_id, from, to) |
 
-## Модель данных
+Вне префикса `/api/v1` также доступны:
 
-- **users**: `id`, `version`, `full_name` (3–100 символов), `phone_number` (опционально, формат `+XXXXXXXXXXX`)
-- **tasks**: `id`, `version`, `title` (1–100 символов), `description` (опционально, до 1000 символов), `completed`, `created_at`, `completed_at`, `author_user_id` (ссылка на пользователя)
+| Метод  | Путь              | Описание                 |
+|--------|-------------------|--------------------------|
+| GET    | `/`               | Веб-интерфейс (`public/index.html`) |
+| GET    | `/swagger/`       | Swagger UI               |
+
+## Модель данных
 
 Схема БД описана в `migrations/000001_init.up.sql`.
