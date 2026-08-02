@@ -46,6 +46,15 @@ func (h *HTTPResponseHandler) JsonResponse(responseBody any, statusCode int) {
 	}
 }
 
+func (h *HTTPResponseHandler) HTMLResponse(html []byte) {
+
+	h.w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	h.w.WriteHeader(http.StatusOK)
+	if _, err := h.w.Write(html); err != nil {
+		h.log.Error("write html response", core_logger.Error(err))
+	}
+}
+
 func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 	var (
 		statusCode int
