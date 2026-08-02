@@ -10,103 +10,165 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --success: #16a34a;
+            --success-light: #dcfce7;
+            --danger: #dc2626;
+            --danger-light: #fee2e2;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --bg: #f3f4f6;
+            --radius: 10px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+        }
+
         body {
-            font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-            max-width: 1000px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            max-width: 1040px;
             margin: 0 auto;
-            padding: 20px;
-            color: #222;
-            background: #f5f6f8;
+            padding: 32px 20px 60px;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.5;
         }
 
         h1 {
-            margin-bottom: 4px;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
         }
 
         h2 {
-            margin-top: 0;
+            margin: 0 0 16px;
+            font-size: 18px;
+            font-weight: 700;
         }
 
         nav {
             display: flex;
-            gap: 8px;
-            margin: 16px 0 20px;
+            gap: 6px;
+            margin: 22px 0 24px;
+            background: #fff;
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: fit-content;
         }
 
         nav button {
-            padding: 8px 16px;
-            border: 1px solid #ccc;
-            background: #fff;
-            border-radius: 6px;
+            padding: 9px 18px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: background .15s ease, color .15s ease;
+        }
+
+        nav button:hover {
+            color: var(--text);
+            background: #f3f4f6;
         }
 
         nav button.active {
-            background: #2563eb;
+            background: var(--primary);
             color: #fff;
-            border-color: #2563eb;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, .35);
         }
 
         .msg {
             display: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 18px;
             font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
         }
 
         .msg-success {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
-            border: 1px solid #86efac;
+            border-left: 4px solid var(--success);
         }
 
         .msg-error {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
-            border: 1px solid #fca5a5;
+            border-left: 4px solid var(--danger);
         }
 
         .card {
             background: #fff;
-            border: 1px solid #e2e2e2;
-            border-radius: 8px;
-            padding: 16px 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px 24px;
             margin-bottom: 20px;
+            box-shadow: var(--shadow);
         }
 
         .row {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 14px;
             align-items: flex-end;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .field {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 5px;
         }
 
         label {
-            font-size: 13px;
-            color: #555;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .3px;
         }
 
         input,
         select,
         textarea {
-            padding: 7px 9px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 9px 11px;
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
             font-size: 14px;
             font-family: inherit;
+            background: #fff;
+            color: var(--text);
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .12);
         }
 
         textarea {
-            min-height: 60px;
+            min-height: 64px;
             resize: vertical;
             width: 100%;
         }
@@ -114,8 +176,15 @@
         .checkbox-row {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
             font-size: 14px;
+            color: var(--text);
+        }
+
+        .checkbox-row input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
         }
 
         button {
@@ -123,36 +192,42 @@
         }
 
         .btn {
-            padding: 8px 16px;
+            padding: 9px 18px;
             border: none;
-            border-radius: 6px;
-            background: #2563eb;
+            border-radius: 7px;
+            background: var(--primary);
             color: #fff;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
+            transition: background .15s ease, transform .05s ease;
         }
 
         .btn:hover {
-            background: #1d4ed8;
+            background: var(--primary-dark);
+        }
+
+        .btn:active {
+            transform: scale(.98);
         }
 
         .btn-secondary {
-            background: #e5e7eb;
-            color: #222;
+            background: #eef0f3;
+            color: var(--text);
         }
 
         .btn-secondary:hover {
-            background: #d1d5db;
+            background: #e2e5e9;
         }
 
         .btn-sm {
-            padding: 4px 10px;
-            font-size: 13px;
+            padding: 5px 12px;
+            font-size: 12.5px;
             margin-right: 4px;
         }
 
         .danger {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
@@ -168,59 +243,116 @@
 
         .table-wrap {
             overflow-x: auto;
+            border-radius: 8px;
         }
 
         th,
         td {
             text-align: left;
-            padding: 8px 10px;
-            border-bottom: 1px solid #eee;
+            padding: 11px 12px;
+            border-bottom: 1px solid var(--border);
             vertical-align: top;
         }
 
         th {
-            color: #555;
+            color: var(--text-muted);
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            background: #fafafa;
+        }
+
+        tbody tr {
+            transition: background .1s ease;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
         }
 
         .empty {
             text-align: center;
-            color: #888;
-            padding: 20px;
+            color: var(--text-muted);
+            padding: 32px;
         }
 
         .pagination {
             display: flex;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 14px;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-top: 16px;
+            gap: 14px;
+            margin-top: 18px;
         }
 
         .stat-box {
-            background: #f8fafc;
-            border: 1px solid #e2e2e2;
-            border-radius: 8px;
-            padding: 14px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent, var(--primary));
+        }
+
+        .stat-box.c-blue {
+            --accent: #2563eb;
+        }
+
+        .stat-box.c-green {
+            --accent: #16a34a;
+        }
+
+        .stat-box.c-amber {
+            --accent: #d97706;
+        }
+
+        .stat-box.c-purple {
+            --accent: #7c3aed;
         }
 
         .stat-box .value {
-            font-size: 26px;
-            font-weight: 700;
-            color: #2563eb;
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--accent, var(--primary));
         }
 
         .stat-box .label {
-            font-size: 13px;
-            color: #666;
-            margin-top: 4px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                width: 100%;
+            }
+
+            nav button {
+                flex: 1;
+            }
+
+            .card {
+                padding: 16px;
+            }
         }
     </style>
 </head>
@@ -228,7 +360,6 @@
 <body>
 
     <h1>Todo App</h1>
-    <div style="color:#666">Простой интерфейс поверх REST API (см. /swagger/index.html)</div>
 
     <nav>
         <button id="nav-tasks" class="active" onclick="showSection('tasks')">Задачи</button>
@@ -298,7 +429,6 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Название</th>
                             <th>Описание</th>
                             <th>Автор</th>
@@ -309,7 +439,7 @@
                     </thead>
                     <tbody id="tasks-tbody">
                         <tr>
-                            <td colspan="7" class="empty">Загрузка…</td>
+                            <td colspan="6" class="empty">Загрузка…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -362,16 +492,14 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Имя</th>
                             <th>Телефон</th>
-                            <th>Версия</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
                     <tbody id="users-tbody">
                         <tr>
-                            <td colspan="5" class="empty">Загрузка…</td>
+                            <td colspan="3" class="empty">Загрузка…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -404,19 +532,19 @@
             </div>
 
             <div class="stats-grid">
-                <div class="stat-box">
+                <div class="stat-box c-blue">
                     <div class="value" id="stat-created">—</div>
                     <div class="label">Создано задач</div>
                 </div>
-                <div class="stat-box">
+                <div class="stat-box c-green">
                     <div class="value" id="stat-completed">—</div>
                     <div class="label">Выполнено задач</div>
                 </div>
-                <div class="stat-box">
+                <div class="stat-box c-amber">
                     <div class="value" id="stat-rate">—</div>
                     <div class="label">Процент выполнения</div>
                 </div>
-                <div class="stat-box">
+                <div class="stat-box c-purple">
                     <div class="value" id="stat-avg">—</div>
                     <div class="label">Среднее время выполнения</div>
                 </div>
@@ -546,15 +674,13 @@
         function renderUsersTable(list) {
             const tbody = document.getElementById('users-tbody');
             if (list.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty">Пользователей нет</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="empty">Пользователей нет</td></tr>';
                 return;
             }
             tbody.innerHTML = list.map(u => `
                 <tr>
-                    <td>${u.id}</td>
                     <td>${escapeHtml(u.full_name)}</td>
                     <td>${u.phone_number ? escapeHtml(u.phone_number) : '—'}</td>
-                    <td>${u.version}</td>
                     <td>
                         <button class="btn btn-secondary btn-sm" onclick="startEditUser(${u.id})">Изменить</button>
                         <button class="btn danger btn-sm" onclick="deleteUser(${u.id})">Удалить</button>
@@ -658,12 +784,11 @@
         function renderTasksTable(list) {
             const tbody = document.getElementById('tasks-tbody');
             if (list.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty">Задач нет</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="empty">Задач нет</td></tr>';
                 return;
             }
             tbody.innerHTML = list.map(t => `
                 <tr>
-                    <td>${t.id}</td>
                     <td>${escapeHtml(t.title)}</td>
                     <td>${t.description ? escapeHtml(t.description) : '—'}</td>
                     <td>${escapeHtml(userNameById(t.author_user_id))}</td>
