@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #222;
+            background: #f5f6f8;
+        }
+
+        h1 {
+            margin-bottom: 4px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        nav {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0 20px;
+        }
+
+        nav button {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        nav button.active {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+
+        .msg {
+            display: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .msg-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .msg-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e2e2e2;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        label {
+            font-size: 13px;
+            color: #555;
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 7px 9px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+            width: 100%;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #222;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 13px;
+            margin-right: 4px;
+        }
+
+        .danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .danger:hover {
+            background: #fecaca;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        th {
+            color: #555;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e2e2;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .stat-box .label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Todo App</h1>
+    <div style="color:#666">Простой интерфейс поверх REST API (см. /swagger/index.html)</div>
+
+    <nav>
+        <button id="nav-tasks" class="active" onclick="showSection('tasks')">Задачи</button>
+        <button id="nav-users" onclick="showSection('users')">Пользователи</button>
+        <button id="nav-stats" onclick="showSection('stats'); loadStats();">Статистика</button>
+    </nav>
+
+    <div id="msg" class="msg"></div>
+
+    <!-- ============ TASKS ============ -->
+    <section id="section-tasks" class="section">
+
+        <div class="card">
+            <h2 id="task-form-title">Новая задача</h2>
+            <form id="task-form" onsubmit="submitTaskForm(event)">
+                <div class="row">
+                    <div class="field" style="flex:1; min-width:200px">
+                        <label>Название *</label>
+                        <input type="text" id="task-title" maxlength="100" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field" style="flex:1; min-width:200px">
+                        <label>Описание</label>
+                        <textarea id="task-description" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <div class="row" id="task-author-row">
+                    <div class="field">
+                        <label>Автор *</label>
+                        <select id="task-author"></select>
+                    </div>
+                </div>
+                <div class="row" id="task-clear-desc-row" style="display:none">
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="task-clear-desc">
+                        Очистить описание
+                    </label>
+                </div>
+                <div class="row" id="task-completed-row" style="display:none">
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="task-completed">
+                        Выполнена
+                    </label>
+                </div>
+                <button type="submit" class="btn" id="task-submit-btn">Создать</button>
+                <button type="button" class="btn btn-secondary" id="task-cancel-btn" style="display:none"
+                    onclick="cancelTaskEdit()">Отмена</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="row">
+                <div class="field">
+                    <label>Автор</label>
+                    <select id="task-filter-author" onchange="tasksApplyFilter()"></select>
+                </div>
+                <div class="field">
+                    <label>На странице</label>
+                    <input type="number" id="tasks-limit" value="20" min="1" max="1000" style="width:80px"
+                        onchange="tasksApplyFilter()">
+                </div>
+                <button class="btn btn-secondary" onclick="tasksResetFilter()">Сбросить</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Описание</th>
+                            <th>Автор</th>
+                            <th>Статус</th>
+                            <th>Создана</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasks-tbody">
+                        <tr>
+                            <td colspan="7" class="empty">Загрузка…</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <button class="btn btn-secondary btn-sm" id="tasks-prev" onclick="tasksPrevPage()">← Назад</button>
+                <button class="btn btn-secondary btn-sm" id="tasks-next" onclick="tasksNextPage()">Вперёд →</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ USERS ============ -->
+    <section id="section-users" class="section" style="display:none">
+
+        <div class="card">
+            <h2 id="user-form-title">Новый пользователь</h2>
+            <form id="user-form" onsubmit="submitUserForm(event)">
+                <div class="row">
+                    <div class="field" style="flex:1; min-width:200px">
+                        <label>Полное имя * (мин. 3 символа)</label>
+                        <input type="text" id="user-fullname" maxlength="100" minlength="3" required>
+                    </div>
+                    <div class="field" style="flex:1; min-width:200px">
+                        <label>Телефон (формат +79991234567)</label>
+                        <input type="text" id="user-phone" maxlength="20" placeholder="+79991234567">
+                    </div>
+                </div>
+                <div class="row" id="user-clear-phone-row" style="display:none">
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="user-clear-phone">
+                        Очистить телефон
+                    </label>
+                </div>
+                <button type="submit" class="btn" id="user-submit-btn">Создать</button>
+                <button type="button" class="btn btn-secondary" id="user-cancel-btn" style="display:none"
+                    onclick="cancelUserEdit()">Отмена</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="row">
+                <div class="field">
+                    <label>На странице</label>
+                    <input type="number" id="users-limit" value="20" min="1" max="1000" style="width:80px"
+                        onchange="usersApplyFilter()">
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Телефон</th>
+                            <th>Версия</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr>
+                            <td colspan="5" class="empty">Загрузка…</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <button class="btn btn-secondary btn-sm" id="users-prev" onclick="usersPrevPage()">← Назад</button>
+                <button class="btn btn-secondary btn-sm" id="users-next" onclick="usersNextPage()">Вперёд →</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ STATISTICS ============ -->
+    <section id="section-stats" class="section" style="display:none">
+        <div class="card">
+            <div class="row">
+                <div class="field">
+                    <label>Автор</label>
+                    <select id="stats-author"></select>
+                </div>
+                <div class="field">
+                    <label>С</label>
+                    <input type="date" id="stats-from">
+                </div>
+                <div class="field">
+                    <label>По</label>
+                    <input type="date" id="stats-to">
+                </div>
+                <button class="btn" onclick="loadStats()">Показать</button>
+                <button class="btn btn-secondary" onclick="statsReset()">Сбросить</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="value" id="stat-created">—</div>
+                    <div class="label">Создано задач</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="stat-completed">—</div>
+                    <div class="label">Выполнено задач</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="stat-rate">—</div>
+                    <div class="label">Процент выполнения</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="stat-avg">—</div>
+                    <div class="label">Среднее время выполнения</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        'use strict';
+
+        const API = '/api/v1';
+
+        // ─── API helper ─────────────────────────────────────────
+        async function api(path, options = {}) {
+            const res = await fetch(API + path, {
+                headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+                ...options,
+            });
+            if (res.status === 204) return null;
+            const text = await res.text();
+            let data = null;
+            try { data = JSON.parse(text); } catch { data = text; }
+            if (!res.ok) {
+                // `error` — конкретная причина, `message` — общая фраза; показываем конкретную.
+                const detail = data && (data.error || data.message);
+                throw new Error(detail || ('HTTP ' + res.status));
+            }
+            return data;
+        }
+
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function formatDate(s) {
+            if (!s) return '—';
+            const d = new Date(s);
+            return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Go duration.String() format, e.g. "2h30m0s", "45m10.5s", "1.2s"
+        function formatDuration(raw) {
+            if (!raw) return '—';
+            const str = String(raw);
+            const h = str.match(/(\d+)h/);
+            const m = str.match(/(\d+)m(?!s)/);
+            const s = str.match(/([\d.]+)s/);
+            const parts = [];
+            if (h) parts.push(h[1] + 'ч');
+            if (m) parts.push(m[1] + 'м');
+            if (s) parts.push(Math.round(parseFloat(s[1])) + 'с');
+            return parts.length ? parts.join(' ') : str;
+        }
+
+        function showMessage(text, isError) {
+            const el = document.getElementById('msg');
+            el.textContent = text;
+            el.className = 'msg ' + (isError ? 'msg-error' : 'msg-success');
+            el.style.display = 'block';
+            clearTimeout(showMessage._t);
+            showMessage._t = setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById('section-' + name).style.display = 'block';
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById('nav-' + name).classList.add('active');
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // USERS
+        // ─────────────────────────────────────────────────────────
+        let users = []; // cache of (up to 1000) users, used to fill author dropdowns
+        let userPage = { limit: 20, offset: 0 };
+        let editingUserId = null;
+
+        async function loadAllUsersForSelects() {
+            try {
+                users = await api('/users?' + new URLSearchParams({ limit: 1000, offset: 0 })) || [];
+            } catch {
+                users = [];
+            }
+            fillUserSelect('task-author', false);
+            fillUserSelect('task-filter-author', true);
+            fillUserSelect('stats-author', true);
+        }
+
+        function fillUserSelect(selectId, withAllOption) {
+            const sel = document.getElementById(selectId);
+            const current = sel.value;
+            sel.innerHTML = '';
+            if (withAllOption) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Все пользователи';
+                sel.appendChild(opt);
+            }
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.full_name + ' (ID: ' + u.id + ')';
+                sel.appendChild(opt);
+            });
+            sel.value = current || '';
+        }
+
+        function userNameById(id) {
+            const u = users.find(x => x.id === id);
+            return u ? u.full_name : ('#' + id);
+        }
+
+        async function loadUsers() {
+            const params = new URLSearchParams({ limit: userPage.limit, offset: userPage.offset });
+            try {
+                const list = await api('/users?' + params) || [];
+                renderUsersTable(list);
+                document.getElementById('users-prev').disabled = userPage.offset <= 0;
+                document.getElementById('users-next').disabled = list.length < userPage.limit;
+            } catch (e) {
+                showMessage('Ошибка загрузки пользователей: ' + e.message, true);
+            }
+        }
+
+        function renderUsersTable(list) {
+            const tbody = document.getElementById('users-tbody');
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty">Пользователей нет</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${escapeHtml(u.full_name)}</td>
+                    <td>${u.phone_number ? escapeHtml(u.phone_number) : '—'}</td>
+                    <td>${u.version}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="startEditUser(${u.id})">Изменить</button>
+                        <button class="btn danger btn-sm" onclick="deleteUser(${u.id})">Удалить</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function usersPrevPage() { userPage.offset = Math.max(0, userPage.offset - userPage.limit); loadUsers(); }
+        function usersNextPage() { userPage.offset += userPage.limit; loadUsers(); }
+        function usersApplyFilter() {
+            userPage.limit = parseInt(document.getElementById('users-limit').value) || 20;
+            userPage.offset = 0;
+            loadUsers();
+        }
+
+        async function startEditUser(id) {
+            try {
+                const u = await api('/users/' + id);
+                editingUserId = id;
+                document.getElementById('user-form-title').textContent = 'Изменить пользователя #' + id;
+                document.getElementById('user-fullname').value = u.full_name;
+                document.getElementById('user-phone').value = u.phone_number || '';
+                document.getElementById('user-clear-phone').checked = false;
+                document.getElementById('user-clear-phone-row').style.display = 'flex';
+                document.getElementById('user-submit-btn').textContent = 'Сохранить';
+                document.getElementById('user-cancel-btn').style.display = 'inline-block';
+            } catch (e) {
+                showMessage('Не удалось загрузить пользователя: ' + e.message, true);
+            }
+        }
+
+        function cancelUserEdit() {
+            editingUserId = null;
+            document.getElementById('user-form').reset();
+            document.getElementById('user-form-title').textContent = 'Новый пользователь';
+            document.getElementById('user-clear-phone-row').style.display = 'none';
+            document.getElementById('user-submit-btn').textContent = 'Создать';
+            document.getElementById('user-cancel-btn').style.display = 'none';
+        }
+
+        async function submitUserForm(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('user-fullname').value.trim();
+            const phone = document.getElementById('user-phone').value.trim();
+
+            try {
+                if (editingUserId === null) {
+                    const body = { full_name: fullName };
+                    if (phone) body.phone_number = phone;
+                    await api('/users', { method: 'POST', body: JSON.stringify(body) });
+                    showMessage('Пользователь создан', false);
+                } else {
+                    const clearPhone = document.getElementById('user-clear-phone').checked;
+                    const body = { full_name: fullName };
+                    if (clearPhone) body.phone_number = null;
+                    else if (phone) body.phone_number = phone;
+                    await api('/users/' + editingUserId, { method: 'PATCH', body: JSON.stringify(body) });
+                    showMessage('Пользователь обновлён', false);
+                }
+                cancelUserEdit();
+                await loadAllUsersForSelects();
+                await loadUsers();
+                loadTasks(); // author names shown in the tasks table may have changed
+            } catch (e) {
+                showMessage(e.message, true);
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Удалить пользователя #' + id + '? Это действие необратимо.')) return;
+            try {
+                await api('/users/' + id, { method: 'DELETE' });
+                showMessage('Пользователь удалён', false);
+                await loadAllUsersForSelects();
+                await loadUsers();
+            } catch (e) {
+                showMessage(e.message, true);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // TASKS
+        // ─────────────────────────────────────────────────────────
+        let taskPage = { limit: 20, offset: 0 };
+        let editingTaskId = null;
+
+        async function loadTasks() {
+            const authorFilter = document.getElementById('task-filter-author').value;
+            const params = new URLSearchParams({ limit: taskPage.limit, offset: taskPage.offset });
+            if (authorFilter) params.set('author_user_id', authorFilter);
+            try {
+                const list = await api('/tasks?' + params) || [];
+                renderTasksTable(list);
+                document.getElementById('tasks-prev').disabled = taskPage.offset <= 0;
+                document.getElementById('tasks-next').disabled = list.length < taskPage.limit;
+            } catch (e) {
+                showMessage('Ошибка загрузки задач: ' + e.message, true);
+            }
+        }
+
+        function renderTasksTable(list) {
+            const tbody = document.getElementById('tasks-tbody');
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty">Задач нет</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(t => `
+                <tr>
+                    <td>${t.id}</td>
+                    <td>${escapeHtml(t.title)}</td>
+                    <td>${t.description ? escapeHtml(t.description) : '—'}</td>
+                    <td>${escapeHtml(userNameById(t.author_user_id))}</td>
+                    <td>
+                        <label class="checkbox-row">
+                            <input type="checkbox" ${t.completed ? 'checked' : ''}
+                                onchange="toggleTaskCompleted(${t.id}, this.checked)">
+                            ${t.completed ? 'Выполнена' : 'В работе'}
+                        </label>
+                    </td>
+                    <td>${formatDate(t.created_at)}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="startEditTask(${t.id})">Изменить</button>
+                        <button class="btn danger btn-sm" onclick="deleteTask(${t.id})">Удалить</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function tasksPrevPage() { taskPage.offset = Math.max(0, taskPage.offset - taskPage.limit); loadTasks(); }
+        function tasksNextPage() { taskPage.offset += taskPage.limit; loadTasks(); }
+        function tasksApplyFilter() {
+            taskPage.limit = parseInt(document.getElementById('tasks-limit').value) || 20;
+            taskPage.offset = 0;
+            loadTasks();
+        }
+        function tasksResetFilter() {
+            document.getElementById('task-filter-author').value = '';
+            document.getElementById('tasks-limit').value = 20;
+            taskPage = { limit: 20, offset: 0 };
+            loadTasks();
+        }
+
+        async function toggleTaskCompleted(id, completed) {
+            try {
+                await api('/tasks/' + id, { method: 'PATCH', body: JSON.stringify({ completed }) });
+                showMessage(completed ? 'Задача отмечена выполненной' : 'Задача возвращена в работу', false);
+                loadTasks();
+            } catch (e) {
+                showMessage(e.message, true);
+                loadTasks(); // revert the checkbox to the real server state
+            }
+        }
+
+        async function startEditTask(id) {
+            try {
+                const t = await api('/tasks/' + id);
+                editingTaskId = id;
+                document.getElementById('task-form-title').textContent = 'Изменить задачу #' + id;
+                document.getElementById('task-title').value = t.title;
+                document.getElementById('task-description').value = t.description || '';
+                document.getElementById('task-author-row').style.display = 'none';
+                document.getElementById('task-clear-desc').checked = false;
+                document.getElementById('task-clear-desc-row').style.display = 'flex';
+                document.getElementById('task-completed').checked = t.completed;
+                document.getElementById('task-completed-row').style.display = 'flex';
+                document.getElementById('task-submit-btn').textContent = 'Сохранить';
+                document.getElementById('task-cancel-btn').style.display = 'inline-block';
+            } catch (e) {
+                showMessage('Не удалось загрузить задачу: ' + e.message, true);
+            }
+        }
+
+        function cancelTaskEdit() {
+            editingTaskId = null;
+            document.getElementById('task-form').reset();
+            document.getElementById('task-form-title').textContent = 'Новая задача';
+            document.getElementById('task-author-row').style.display = 'flex';
+            document.getElementById('task-clear-desc-row').style.display = 'none';
+            document.getElementById('task-completed-row').style.display = 'none';
+            document.getElementById('task-submit-btn').textContent = 'Создать';
+            document.getElementById('task-cancel-btn').style.display = 'none';
+        }
+
+        async function submitTaskForm(e) {
+            e.preventDefault();
+            const title = document.getElementById('task-title').value.trim();
+            const description = document.getElementById('task-description').value.trim();
+
+            try {
+                if (editingTaskId === null) {
+                    const authorId = document.getElementById('task-author').value;
+                    if (!authorId) { showMessage('Выберите автора задачи', true); return; }
+                    const body = { title, author_user_id: Number(authorId) };
+                    if (description) body.description = description;
+                    await api('/tasks', { method: 'POST', body: JSON.stringify(body) });
+                    showMessage('Задача создана', false);
+                } else {
+                    const clearDesc = document.getElementById('task-clear-desc').checked;
+                    const completed = document.getElementById('task-completed').checked;
+                    const body = { title, completed };
+                    if (clearDesc) body.description = null;
+                    else if (description) body.description = description;
+                    await api('/tasks/' + editingTaskId, { method: 'PATCH', body: JSON.stringify(body) });
+                    showMessage('Задача обновлена', false);
+                }
+                cancelTaskEdit();
+                loadTasks();
+            } catch (e) {
+                showMessage(e.message, true);
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('Удалить задачу #' + id + '? Это действие необратимо.')) return;
+            try {
+                await api('/tasks/' + id, { method: 'DELETE' });
+                showMessage('Задача удалена', false);
+                loadTasks();
+            } catch (e) {
+                showMessage(e.message, true);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // STATISTICS
+        // ─────────────────────────────────────────────────────────
+        async function loadStats() {
+            const authorId = document.getElementById('stats-author').value;
+            const from = document.getElementById('stats-from').value;
+            const to = document.getElementById('stats-to').value;
+            const params = new URLSearchParams();
+            if (authorId) params.set('user_id', authorId);
+            if (from) params.set('from', from);
+            if (to) params.set('to', to);
+            try {
+                const s = await api('/statistics?' + params);
+                renderStats(s);
+            } catch (e) {
+                showMessage('Ошибка загрузки статистики: ' + e.message, true);
+            }
+        }
+
+        function renderStats(s) {
+            document.getElementById('stat-created').textContent = s.tasks_created ?? 0;
+            document.getElementById('stat-completed').textContent = s.tasks_completed ?? 0;
+            const rate = s.tasks_completion_rate;
+            document.getElementById('stat-rate').textContent =
+                (rate === null || rate === undefined) ? '—' : rate.toFixed(1) + '%';
+            document.getElementById('stat-avg').textContent = formatDuration(s.tasks_average_completion_time);
+        }
+
+        function statsReset() {
+            document.getElementById('stats-author').value = '';
+            document.getElementById('stats-from').value = '';
+            document.getElementById('stats-to').value = '';
+            loadStats();
+        }
+
+        // ─── Init ────────────────────────────────────────────────
+        (async function init() {
+            await loadAllUsersForSelects();
+            await loadUsers();
+            await loadTasks();
+        })();
+    </script>
+
+</body>
+
+</html>
